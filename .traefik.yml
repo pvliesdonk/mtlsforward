@@ -1,12 +1,12 @@
-displayName: Demo Plugin
+displayName: mTLS forward
 type: middleware
 iconPath: .assets/icon.png
 
-import: github.com/traefik/plugindemo
+import: https://github.com/pvliesdonk/traefik_mtls_forward
 
-summary: '[Demo] Add Request Header'
+summary: 'Forward mTLS client certificate as SSL_CLIENT_CERT and CERT_CHAIN_# headers for use with Wildfly/Undertow services like Keycloak.'
 
 testData:
   Headers:
-    X-Demo: test
-    X-URL: '{{URL}}'
+    sslClientCert: SSL_CLIENT_CERT
+    sslCertChainPrefix: CERT_CHAIN
