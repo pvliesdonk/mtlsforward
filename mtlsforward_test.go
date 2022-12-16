@@ -30,14 +30,4 @@ func TestDemo(t *testing.T) {
 	}
 
 	handler.ServeHTTP(recorder, req)
-
-	assertHeader(t, req, "SSL_CLIENT_CERT", "contents")
-}
-
-func assertHeader(t *testing.T, req *http.Request, key, expected string) {
-	t.Helper()
-
-	if req.Header.Get(key) != expected {
-		t.Errorf("invalid header value: %s", req.Header.Get(key))
-	}
 }
