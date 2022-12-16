@@ -1,3 +1,3 @@
-module github.com/pvliesdonk/traefik_mtls_forward
+module github.com/pvliesdonk/mtlsforward
 
 go 1.19
