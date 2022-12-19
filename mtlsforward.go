@@ -5,6 +5,7 @@ package mtlsforward
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"net/http"
@@ -14,13 +15,17 @@ import (
 
 // Config handles configuration of the sslClientCert (e.g. SSL_CLIENT_CERT) and sslCertChainPrefix (e.g. SSL_CERT_CHAIN) headers.
 type Config struct {
-	Headers map[string]string
+	Headers   map[string]string
+	EncodePem bool
+	EncodeURL bool
 }
 
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
 	return &Config{
-		Headers: make(map[string]string),
+		Headers:   make(map[string]string),
+		EncodePem: false,
+		EncodeURL: false,
 	}
 }
 
@@ -36,16 +41,35 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 	}
 
 	return &mTLSForward{
-		headers: config.Headers,
-		next:    next,
-		name:    name,
+		headers:   config.Headers,
+		encodePem: config.EncodePem,
+		encodeURL: config.EncodeURL,
+		next:      next,
+		name:      name,
 	}, nil
 }
 
 type mTLSForward struct {
-	headers map[string]string
-	next    http.Handler
-	name    string
+	headers   map[string]string
+	encodePem bool
+	encodeURL bool
+	next      http.Handler
+	name      string
+}
+
+func (m mTLSForward) encodeCertificate(certBytes *[]byte) string {
+	encodedCert := ""
+
+	if m.encodePem {
+		encodedCert = string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: *certBytes}))
+	} else {
+		encodedCert = base64.StdEncoding.EncodeToString(*certBytes)
+	}
+
+	if m.encodeURL {
+		encodedCert = url.QueryEscape(encodedCert)
+	}
+	return encodedCert
 }
 
 func (m mTLSForward) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -53,16 +77,13 @@ func (m mTLSForward) ServeHTTP(writer http.ResponseWriter, request *http.Request
 	if request.TLS != nil && len(request.TLS.PeerCertificates) > 0 {
 		for i, cert := range request.TLS.PeerCertificates {
 			fmt.Println("Found certificate with subject", cert.Subject, "issued by", cert.Issuer)
-			certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
+			certString := m.encodeCertificate(&cert.Raw)
 			if i == 0 {
-				// client cert
-				fmt.Println(string(certPEM))
-				request.Header.Set(m.headers["sslClientCert"], url.QueryEscape(string(certPEM)))
+				request.Header.Set(m.headers["sslClientCert"], certString)
 			} else {
 				// part of chain
 				headerName := m.headers["sslCertChainPrefix"] + "_" + strconv.Itoa(i-1)
-				fmt.Println(string(certPEM))
-				request.Header.Set(headerName, url.QueryEscape(string(certPEM)))
+				request.Header.Set(headerName, certString)
 			}
 		}
 	}
