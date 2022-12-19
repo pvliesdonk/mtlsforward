@@ -40,8 +40,8 @@ http:
           headers:
             sslClientCert: "SSL_CLIENT_CERT"      
             sslCertChainPrefix: "SSL_CERT_CHAIN" 
-	  encodePem: false   #optional, encode certificates as PEM
-	  encodeUrl: false   #optional, enable URL encoding
+          encodePem: false   #optional, encode certificates as PEM
+          encodeUrl: false   #optional, enable URL encoding
 
   routers:
     my-router:
@@ -61,11 +61,11 @@ http:
 
 Settings for the plugin:
 
-+------------------------------+---------------------------------+
+|------------------------------|---------------------------------|
 | Option                       | Description                     |
-+------------------------------+---------------------------------+  
+|------------------------------|---------------------------------|  
 | `headers.sslClientCert`      | Name of the header in which to put the found client certificate. A commonly used name is `SSL_CLIENT_CERT` |
 | `headers.sslCertChainPrefix` | The plugin will create additional headers for every certificate in the chain provided. A commonly used name is `SSL_CERT_CHAIN`, which results in values `SSL_CERT_CHAIN_0, `SSL_CERT_CHAIN_1`, etc. |
 | `encodePem`	               | Provide a PEM encoding of the certificates. If false, only a base64 encoded certificate will be provided |
 | `encodeUrl`		       | Provide additional URL encoding of the certificates |
-+------------------------------+---------------------------------+
+|------------------------------|---------------------------------|
