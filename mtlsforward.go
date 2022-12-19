@@ -11,21 +11,24 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // Config handles configuration of the sslClientCert (e.g. SSL_CLIENT_CERT) and sslCertChainPrefix (e.g. SSL_CERT_CHAIN) headers.
 type Config struct {
-	Headers   map[string]string
-	EncodePem bool
-	EncodeURL bool
+	Headers       map[string]string
+	EncodePem     bool
+	EncodeURL     bool
+	RemoveNewline bool
 }
 
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
 	return &Config{
-		Headers:   make(map[string]string),
-		EncodePem: false,
-		EncodeURL: false,
+		Headers:       make(map[string]string),
+		EncodePem:     false,
+		EncodeURL:     false,
+		RemoveNewline: true,
 	}
 }
 
@@ -41,20 +44,22 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 	}
 
 	return &mTLSForward{
-		headers:   config.Headers,
-		encodePem: config.EncodePem,
-		encodeURL: config.EncodeURL,
-		next:      next,
-		name:      name,
+		headers:       config.Headers,
+		encodePem:     config.EncodePem,
+		encodeURL:     config.EncodeURL,
+		removeNewline: config.RemoveNewline,
+		next:          next,
+		name:          name,
 	}, nil
 }
 
 type mTLSForward struct {
-	headers   map[string]string
-	encodePem bool
-	encodeURL bool
-	next      http.Handler
-	name      string
+	headers       map[string]string
+	encodePem     bool
+	encodeURL     bool
+	removeNewline bool
+	next          http.Handler
+	name          string
 }
 
 func (m mTLSForward) encodeCertificate(certBytes *[]byte) string {
@@ -68,6 +73,10 @@ func (m mTLSForward) encodeCertificate(certBytes *[]byte) string {
 
 	if m.encodeURL {
 		encodedCert = url.QueryEscape(encodedCert)
+	}
+
+	if !m.encodeURL && m.removeNewline {
+		encodedCert = strings.ReplaceAll(encodedCert, "\n", " ")
 	}
 	return encodedCert
 }

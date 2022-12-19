@@ -108,6 +108,7 @@ DqH21BZ19OniZNd5kW5xUaF7J0A=
 	cfg2.Headers["sslClientCert"] = "SSL_CLIENT_CERT"
 	cfg2.Headers["sslCertChainPrefix"] = "CERT_CHAIN"
 	cfg2.EncodePem = true
+	cfg2.RemoveNewline = false
 	handler2, err := mtlsforward.New(ctx, next, cfg2, "mtlsforward-plugin2")
 	if err != nil {
 		t.Fatal(err)
