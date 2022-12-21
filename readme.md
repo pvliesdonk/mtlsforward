@@ -6,25 +6,22 @@ Status](https://github.com/pvliesdonk/mtlsforward/workflows/Main/badge.svg?branc
                                                            
 The existing plugins can be browsed into the [Plugin Catalog](https://plugins.traefik.io).
                                                            
-## Configuration
-                   
-Add the following to the static configuration
+# Configuration
+
+## Static Configuration
+Add the following to the static configuration traefik.yaml
 
 ```yaml
-# Static configuration
-
 experimental:
   plugins:
     mtlsforward:
       moduleName: "github.com/pvliesdonk/mtlsforward"
-      version: "V0.1.0"         # check latest version
+      version: "v0.1.0"         # check latest version
 ```
-
+## Dynamic Configuration
 Then define the following middleware in the dynamic configuration:
 
 ```yaml
-# Dynamic configuration
-
 # this plugin makes no sense without client authentication.
 tls:
   options:
@@ -60,7 +57,7 @@ http:
       loadBalancer: http://127.0.0.1:5000 
 ```
 
-Settings for the plugin:
+# Settings for the plugin:
 
 | Option                       | Description                     |
 |------------------------------|---------------------------------|  
@@ -69,3 +66,53 @@ Settings for the plugin:
 | `encodePem`	               | Provide a PEM encoding of the certificates. If false, only a base64 encoded certificate will be provided |
 | `encodeUrl`		       | Provide additional URL encoding of the certificates |
 | `removeNewline`      | Remove newlines from PEM encoding |
+
+# Kubernetes / Helm
+
+Add the following to the helm charts `values.yaml`
+```yaml
+experimental:
+  plugins:
+    enabled: true
+    mtlsforward:
+      moduleName: "github.com/pvliesdonk/mtlsforward"
+      version: "v0.0.5"
+```
+
+And use the following CRDs to configure:
+
+```yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSOption
+metadata:
+  name: mtls-any
+spec:
+  clientAuth:
+    clientAuthType: RequestClientCert
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: mtls-forward
+spec:
+  plugin:
+    mtlsforward:
+      headers:
+        sslClientCert: "SSL_CLIENT_CERT"      #
+        sslCertChainPrefix: "SSL_CERT_CHAIN"  #
+      encodePem: true
+      encodeUrl: false
+      removeNewline: true
+```
+
+and enable the following annotations to you ingress
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: mtls-forward
+    traefik.ingress.kubernetes.io/router.tls: true
+    traefik.ingress.kubernetes.io/router.tls.options: mtls-any
+```
