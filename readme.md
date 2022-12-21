@@ -112,7 +112,7 @@ kind: Ingress
 metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: mtls-forward
+    traefik.ingress.kubernetes.io/router.middlewares: mtls-forward@kubernetescrd
     traefik.ingress.kubernetes.io/router.tls: true
-    traefik.ingress.kubernetes.io/router.tls.options: mtls-any
+    traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-any@kubernetescrd  # name is not the same as above!
 ```
