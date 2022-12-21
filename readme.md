@@ -42,7 +42,8 @@ http:
             sslCertChainPrefix: "SSL_CERT_CHAIN" 
           encodePem: false   #optional, encode certificates as PEM
           encodeUrl: false   #optional, enable URL encoding
-
+          removeNewline: true #remove newlines from PEM encoding          
+          
   routers:
     my-router:
       rule: Host(`demo.localhost`)
@@ -67,3 +68,4 @@ Settings for the plugin:
 | `headers.sslCertChainPrefix` | The plugin will create additional headers for every certificate in the chain provided. A commonly used name is `SSL_CERT_CHAIN`, which results in values `SSL_CERT_CHAIN_0, `SSL_CERT_CHAIN_1`, etc. |
 | `encodePem`	               | Provide a PEM encoding of the certificates. If false, only a base64 encoded certificate will be provided |
 | `encodeUrl`		       | Provide additional URL encoding of the certificates |
+| `removeNewline`      | Remove newlines from PEM encoding |
